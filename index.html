@@ -385,15 +385,15 @@
       <!-- Waitlist Form -->
       <div class="form-card">
         <h2>Get early access</h2>
-        <p>Be among the first to try FeedStack when we launch.</p>
+        <p>Reserve your spot for <strong style="color:var(--purple-3)">$2</strong> — one-time, no subscription.</p>
         <form id="waitlistForm" novalidate>
           <div class="input-row">
             <input type="email" id="emailInput" placeholder="your@email.com" required autocomplete="email" />
-            <button type="submit" class="btn-join" id="submitBtn">Join Waitlist</button>
+            <button type="submit" class="btn-join" id="submitBtn">Reserve &mdash; $2</button>
           </div>
         </form>
         <div class="form-status" id="formStatus"></div>
-        <p class="form-disclaimer">No spam. Unsubscribe anytime.</p>
+        <p class="form-disclaimer">One-time payment. No spam. Unsubscribe anytime.</p>
       </div>
     </div>
   </section>
@@ -468,7 +468,7 @@
       <h2>Ready to take back<br /><span style="background:linear-gradient(135deg,#c084fc,#7c3aed);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">your attention?</span></h2>
       <p>Join the waitlist today and get priority access when we launch.</p>
       <button class="btn-join" id="scrollToForm" style="font-size:1rem;padding:16px 36px;">
-        Join the Waitlist
+        Reserve Your Spot &mdash; $2
       </button>
     </div>
   </section>
@@ -479,49 +479,53 @@
   </footer>
 
   <script>
-    // ── RevenueCat REST API integration ───────────────────
-    // NOTE: Move this key to a server-side proxy before going to production.
-    const RC_API_KEY = 'test_qsEpHSxhvQlLyewayxIyGlVPNze';
-    const RC_BASE    = 'https://api.revenuecat.com/v1';
+    // ── Config ─────────────────────────────────────────────
+    const RC_API_KEY     = 'test_qsEpHSxhvQlLyewayxIyGlVPNze';
+    const RC_BASE        = 'https://api.revenuecat.com/v1';
+    const STRIPE_LINK    = 'https://buy.stripe.com/fZu9AScCF0KgfqS0pmcQU00';
 
     let waitlistCount = 0;
 
+    // ── RevenueCat: register paid subscriber ───────────────
     async function registerSubscriber(email) {
-      // Use the email as the app user ID (URL-safe encode it)
       const userId = encodeURIComponent(email.toLowerCase().trim());
-
-      // 1. Create / fetch the subscriber
-      const subResp = await fetch(`${RC_BASE}/subscribers/${userId}`, {
+      await fetch(`${RC_BASE}/subscribers/${userId}`, {
         method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${RC_API_KEY}`,
-          'Content-Type':  'application/json',
-          'X-Platform':    'web',
-        },
+        headers: { 'Authorization': `Bearer ${RC_API_KEY}`, 'Content-Type': 'application/json', 'X-Platform': 'web' },
       });
-
-      if (!subResp.ok && subResp.status !== 201) {
-        const errText = await subResp.text();
-        throw new Error(`RevenueCat error ${subResp.status}: ${errText}`);
-      }
-
-      // 2. Set subscriber attributes (email + waitlist flag)
       await fetch(`${RC_BASE}/subscribers/${userId}/attributes`, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${RC_API_KEY}`,
-          'Content-Type':  'application/json',
-          'X-Platform':    'web',
-        },
+        headers: { 'Authorization': `Bearer ${RC_API_KEY}`, 'Content-Type': 'application/json', 'X-Platform': 'web' },
         body: JSON.stringify({
           attributes: {
-            '$email': { value: email.toLowerCase().trim() },
-            'waitlist': { value: 'true' },
-            'waitlist_joined_at': { value: new Date().toISOString() },
+            '$email':            { value: email.toLowerCase().trim() },
+            'waitlist':          { value: 'true' },
+            'waitlist_paid':     { value: 'true' },
+            'waitlist_joined_at':{ value: new Date().toISOString() },
           },
         }),
       });
     }
+
+    // ── Handle return from Stripe (success=true in URL) ────
+    (async () => {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('success') === 'true') {
+        const email = localStorage.getItem('feedstack_waitlist_email');
+        const statusEl = document.getElementById('formStatus');
+        statusEl.className = 'form-status success';
+        statusEl.textContent = "Payment confirmed — you're on the list! We'll be in touch soon.";
+        document.getElementById('waitlistForm').style.display = 'none';
+        waitlistCount++;
+        document.getElementById('waitlistCount').textContent = waitlistCount.toLocaleString();
+        if (email) {
+          try { await registerSubscriber(email); } catch (e) { console.error(e); }
+          localStorage.removeItem('feedstack_waitlist_email');
+        }
+        // Clean the URL
+        window.history.replaceState({}, '', window.location.pathname);
+      }
+    })();
 
     // ── Form handling ──────────────────────────────────────
     const form       = document.getElementById('waitlistForm');
@@ -535,7 +539,7 @@
       status.textContent = msg;
     }
 
-    form.addEventListener('submit', async (e) => {
+    form.addEventListener('submit', (e) => {
       e.preventDefault();
       const email = emailInput.value.trim();
 
@@ -544,23 +548,12 @@
         return;
       }
 
-      submitBtn.disabled = true;
-      submitBtn.textContent = 'Joining...';
-      status.className = 'form-status';
+      // Save email so we can register with RevenueCat after Stripe redirects back
+      localStorage.setItem('feedstack_waitlist_email', email);
 
-      try {
-        await registerSubscriber(email);
-        waitlistCount++;
-        countEl.textContent = waitlistCount.toLocaleString();
-        showStatus('success', "You're on the list! We'll reach out when FeedStack is ready.");
-        emailInput.value = '';
-      } catch (err) {
-        console.error(err);
-        showStatus('error', 'Something went wrong. Please try again in a moment.');
-      } finally {
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Join Waitlist';
-      }
+      // Redirect to Stripe with email pre-filled
+      const stripeUrl = `${STRIPE_LINK}?prefilled_email=${encodeURIComponent(email)}&success_url=${encodeURIComponent(window.location.href + '?success=true')}`;
+      window.location.href = stripeUrl;
     });
 
     // ── Scroll-to-form button ──────────────────────────────
