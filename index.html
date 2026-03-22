@@ -463,7 +463,7 @@
   <div class="divider"></div>
 
   <!-- Bottom CTA -->
-  <section class="cta-bottom">
+  <section class="cta-bottom" id="ctaBottom">
     <div class="wrap">
       <h2>Ready to take back<br /><span style="background:linear-gradient(135deg,#c084fc,#7c3aed);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">your attention?</span></h2>
       <p>Join the waitlist today and get priority access when we launch.</p>
@@ -482,7 +482,7 @@
     // ── Config ─────────────────────────────────────────────
     const RC_API_KEY     = 'test_qsEpHSxhvQlLyewayxIyGlVPNze';
     const RC_BASE        = 'https://api.revenuecat.com/v1';
-    const STRIPE_LINK    = 'https://buy.stripe.com/test_cNiaEX4si42kgfc9yP6J200';
+    const STRIPE_LINK    = 'https://buy.stripe.com/dRm3cu5ad0Kg7Yq1tqcQU02';
 
     let waitlistCount = 0;
 
@@ -516,6 +516,7 @@
         statusEl.className = 'form-status success';
         statusEl.innerHTML = "Payment confirmed — check your email for a <strong>50% off promo code</strong> and the link to download FeedStack when we launch.";
         document.getElementById('waitlistForm').style.display = 'none';
+        document.getElementById('ctaBottom').style.display = 'none';
         waitlistCount++;
         document.getElementById('waitlistCount').textContent = waitlistCount.toLocaleString();
         if (email) {
