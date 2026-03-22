@@ -514,7 +514,7 @@
         const email = localStorage.getItem('feedstack_waitlist_email');
         const statusEl = document.getElementById('formStatus');
         statusEl.className = 'form-status success';
-        statusEl.textContent = "Payment confirmed — you're on the list! We'll be in touch soon.";
+        statusEl.innerHTML = "Payment confirmed — check your email for a <strong>50% off promo code</strong> and the link to download FeedStack when we launch.";
         document.getElementById('waitlistForm').style.display = 'none';
         waitlistCount++;
         document.getElementById('waitlistCount').textContent = waitlistCount.toLocaleString();
