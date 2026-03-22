@@ -1,568 +1,757 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FeedStack — Coming Soon</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%237c3aed'/><text x='16' y='23' font-size='20' font-weight='900' text-anchor='middle' fill='white' font-family='system-ui,sans-serif'>F</text></svg>">
-  <style>
-    /* ── Reset & Base ─────────────────────────────────── */
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FeedStack — Coming Soon</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%237c3aed'/><text x='16' y='23' font-size='20' font-weight='900' text-anchor='middle' fill='white' font-family='system-ui,sans-serif'>F</text></svg>"
+    />
+    <style>
+      /* ── Reset & Base ─────────────────────────────────── */
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
 
-    :root {
-      --black:      #07070f;
-      --surface:    #0f0f1a;
-      --surface2:   #16162a;
-      --border:     rgba(139, 92, 246, 0.18);
-      --purple-1:   #7c3aed;
-      --purple-2:   #9d4edd;
-      --purple-3:   #c084fc;
-      --purple-glow:rgba(124, 58, 237, 0.35);
-      --text:       #f1f0ff;
-      --text-muted: #9490b5;
-      --radius:     14px;
-    }
+      :root {
+        --black: #07070f;
+        --surface: #0f0f1a;
+        --surface2: #16162a;
+        --border: rgba(139, 92, 246, 0.18);
+        --purple-1: #7c3aed;
+        --purple-2: #9d4edd;
+        --purple-3: #c084fc;
+        --purple-glow: rgba(124, 58, 237, 0.35);
+        --text: #f1f0ff;
+        --text-muted: #9490b5;
+        --radius: 14px;
+      }
 
-    html { scroll-behavior: smooth; }
+      html {
+        scroll-behavior: smooth;
+      }
 
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: var(--black);
-      color: var(--text);
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        background: var(--black);
+        color: var(--text);
+        min-height: 100vh;
+        overflow-x: hidden;
+      }
 
-    /* ── Animated Background ──────────────────────────── */
-    .bg-orbs {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: 0;
-      overflow: hidden;
-    }
-    .orb {
-      position: absolute;
-      border-radius: 50%;
-      filter: blur(80px);
-      opacity: 0.18;
-      animation: drift 18s ease-in-out infinite alternate;
-    }
-    .orb-1 { width: 600px; height: 600px; background: var(--purple-1); top: -200px; left: -150px; animation-delay: 0s; }
-    .orb-2 { width: 500px; height: 500px; background: #4c1d95; bottom: -100px; right: -100px; animation-delay: -6s; }
-    .orb-3 { width: 350px; height: 350px; background: var(--purple-2); top: 40%; left: 50%; transform: translate(-50%,-50%); animation-delay: -12s; }
+      /* ── Animated Background ──────────────────────────── */
+      .bg-orbs {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 0;
+        overflow: hidden;
+      }
+      .orb {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(80px);
+        opacity: 0.18;
+        animation: drift 18s ease-in-out infinite alternate;
+      }
+      .orb-1 {
+        width: 600px;
+        height: 600px;
+        background: var(--purple-1);
+        top: -200px;
+        left: -150px;
+        animation-delay: 0s;
+      }
+      .orb-2 {
+        width: 500px;
+        height: 500px;
+        background: #4c1d95;
+        bottom: -100px;
+        right: -100px;
+        animation-delay: -6s;
+      }
+      .orb-3 {
+        width: 350px;
+        height: 350px;
+        background: var(--purple-2);
+        top: 40%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        animation-delay: -12s;
+      }
 
-    @keyframes drift {
-      from { transform: translate(0, 0) scale(1); }
-      to   { transform: translate(30px, 40px) scale(1.06); }
-    }
-
-    /* ── Layout ────────────────────────────────────────── */
-    .wrap { position: relative; z-index: 1; max-width: 960px; margin: 0 auto; padding: 0 24px; }
-
-    /* ── Nav ───────────────────────────────────────────── */
-    nav {
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
-      background: rgba(7, 7, 15, 0.72);
-      border-bottom: 1px solid var(--border);
-    }
-    .nav-inner {
-      max-width: 960px;
-      margin: 0 auto;
-      padding: 18px 24px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .logo {
-      font-size: 1.35rem;
-      font-weight: 800;
-      letter-spacing: -0.5px;
-      background: linear-gradient(135deg, var(--purple-3) 0%, var(--purple-1) 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-    .nav-badge {
-      font-size: 0.72rem;
-      font-weight: 600;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--purple-3);
-      background: rgba(124, 58, 237, 0.15);
-      border: 1px solid rgba(192, 132, 252, 0.25);
-      padding: 5px 12px;
-      border-radius: 999px;
-    }
-
-    /* ── Hero ──────────────────────────────────────────── */
-    .hero {
-      padding: 110px 0 80px;
-      text-align: center;
-    }
-    .hero-eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 0.78rem;
-      font-weight: 600;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--purple-3);
-      background: rgba(124, 58, 237, 0.12);
-      border: 1px solid rgba(192, 132, 252, 0.22);
-      padding: 6px 16px;
-      border-radius: 999px;
-      margin-bottom: 32px;
-    }
-    .hero-eyebrow::before { content: ''; width: 6px; height: 6px; background: var(--purple-3); border-radius: 50%; animation: pulse 2s ease-in-out infinite; }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50%       { opacity: 0.5; transform: scale(0.7); }
-    }
-
-    .hero h1 {
-      font-size: clamp(2.6rem, 7vw, 4.4rem);
-      font-weight: 900;
-      line-height: 1.08;
-      letter-spacing: -1.5px;
-      margin-bottom: 24px;
-    }
-    .hero h1 span {
-      background: linear-gradient(135deg, #c084fc 0%, #a855f7 40%, #7c3aed 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-    .hero p {
-      font-size: 1.15rem;
-      color: var(--text-muted);
-      line-height: 1.7;
-      max-width: 540px;
-      margin: 0 auto 48px;
-    }
-
-    /* ── Waitlist Form ─────────────────────────────────── */
-    .form-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 36px 40px;
-      max-width: 520px;
-      margin: 0 auto;
-      box-shadow: 0 0 60px rgba(124, 58, 237, 0.12);
-    }
-    .form-card h2 {
-      font-size: 1.25rem;
-      font-weight: 700;
-      margin-bottom: 8px;
-    }
-    .form-card p {
-      font-size: 0.88rem;
-      color: var(--text-muted);
-      margin-bottom: 24px;
-    }
-    .input-row {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-    .input-row input[type="email"] {
-      flex: 1;
-      min-width: 0;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 14px 18px;
-      font-size: 0.95rem;
-      color: var(--text);
-      outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s;
-    }
-    .input-row input[type="email"]::placeholder { color: var(--text-muted); }
-    .input-row input[type="email"]:focus {
-      border-color: var(--purple-2);
-      box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2);
-    }
-    .btn-join {
-      background: linear-gradient(135deg, var(--purple-1) 0%, var(--purple-2) 100%);
-      color: #fff;
-      font-size: 0.95rem;
-      font-weight: 700;
-      border: none;
-      border-radius: var(--radius);
-      padding: 14px 28px;
-      cursor: pointer;
-      transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
-      white-space: nowrap;
-      box-shadow: 0 4px 20px rgba(124, 58, 237, 0.4);
-    }
-    .btn-join:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 8px 28px rgba(124, 58, 237, 0.55); }
-    .btn-join:active { transform: translateY(0); }
-    .btn-join:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-
-    .form-status {
-      margin-top: 16px;
-      font-size: 0.88rem;
-      border-radius: 10px;
-      padding: 12px 16px;
-      display: none;
-    }
-    .form-status.success {
-      display: block;
-      background: rgba(134, 239, 172, 0.08);
-      border: 1px solid rgba(134, 239, 172, 0.25);
-      color: #86efac;
-    }
-    .form-status.error {
-      display: block;
-      background: rgba(248, 113, 113, 0.08);
-      border: 1px solid rgba(248, 113, 113, 0.25);
-      color: #f87171;
-    }
-
-    .form-disclaimer {
-      margin-top: 14px;
-      font-size: 0.76rem;
-      color: var(--text-muted);
-      text-align: center;
-    }
-
-    /* ── Stats Strip ───────────────────────────────────── */
-    .stats {
-      display: flex;
-      justify-content: center;
-      gap: 48px;
-      padding: 60px 0;
-      flex-wrap: wrap;
-    }
-    .stat { text-align: center; }
-    .stat-num {
-      font-size: 2rem;
-      font-weight: 900;
-      background: linear-gradient(135deg, var(--purple-3), var(--purple-1));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-    .stat-label { font-size: 0.82rem; color: var(--text-muted); margin-top: 4px; }
-
-    /* ── Divider ───────────────────────────────────────── */
-    .divider {
-      height: 1px;
-      background: linear-gradient(90deg, transparent, var(--border), transparent);
-      margin: 0 24px;
-    }
-
-    /* ── Features ──────────────────────────────────────── */
-    .features { padding: 80px 0; }
-    .section-label {
-      text-align: center;
-      font-size: 0.78rem;
-      font-weight: 600;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--purple-3);
-      margin-bottom: 14px;
-    }
-    .section-title {
-      text-align: center;
-      font-size: clamp(1.7rem, 4vw, 2.4rem);
-      font-weight: 800;
-      letter-spacing: -0.8px;
-      margin-bottom: 14px;
-    }
-    .section-sub {
-      text-align: center;
-      font-size: 1rem;
-      color: var(--text-muted);
-      max-width: 480px;
-      margin: 0 auto 52px;
-      line-height: 1.65;
-    }
-    .feat-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 20px;
-    }
-    .feat-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 28px 24px;
-      transition: border-color 0.25s, transform 0.2s, box-shadow 0.25s;
-    }
-    .feat-card:hover {
-      border-color: rgba(139, 92, 246, 0.45);
-      transform: translateY(-3px);
-      box-shadow: 0 12px 40px rgba(124, 58, 237, 0.14);
-    }
-    .feat-icon {
-      width: 44px;
-      height: 44px;
-      border-radius: 12px;
-      background: rgba(124, 58, 237, 0.14);
-      border: 1px solid rgba(124, 58, 237, 0.25);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.3rem;
-      margin-bottom: 18px;
-    }
-    .feat-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 8px; }
-    .feat-card p  { font-size: 0.87rem; color: var(--text-muted); line-height: 1.6; }
-
-    /* ── CTA Bottom ────────────────────────────────────── */
-    .cta-bottom {
-      padding: 80px 0 100px;
-      text-align: center;
-    }
-    .cta-bottom h2 {
-      font-size: clamp(1.8rem, 5vw, 2.8rem);
-      font-weight: 900;
-      letter-spacing: -0.8px;
-      margin-bottom: 16px;
-    }
-    .cta-bottom p {
-      font-size: 1rem;
-      color: var(--text-muted);
-      margin-bottom: 36px;
-    }
-
-    /* ── Footer ────────────────────────────────────────── */
-    footer {
-      border-top: 1px solid var(--border);
-      padding: 28px 24px;
-      text-align: center;
-      font-size: 0.8rem;
-      color: var(--text-muted);
-    }
-    footer span {
-      background: linear-gradient(135deg, var(--purple-3), var(--purple-1));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      font-weight: 700;
-    }
-
-    /* ── Responsive ────────────────────────────────────── */
-    @media (max-width: 540px) {
-      .form-card { padding: 28px 20px; }
-      .input-row { flex-direction: column; }
-      .btn-join  { width: 100%; }
-      .stats     { gap: 28px; }
-    }
-  </style>
-</head>
-<body>
-
-  <!-- Ambient background -->
-  <div class="bg-orbs" aria-hidden="true">
-    <div class="orb orb-1"></div>
-    <div class="orb orb-2"></div>
-    <div class="orb orb-3"></div>
-  </div>
-
-  <!-- Nav -->
-  <nav>
-    <div class="nav-inner">
-      <div class="logo">FeedStack</div>
-      <div class="nav-badge">Coming Soon</div>
-    </div>
-  </nav>
-
-  <!-- Hero -->
-  <section class="hero">
-    <div class="wrap">
-      <div class="hero-eyebrow">Early Access Open</div>
-      <h1>Your content.<br /><span>One smart feed.</span></h1>
-      <p>FeedStack brings everything you read, watch, and follow into a single, intelligent stream — curated for you, not the algorithm.</p>
-
-      <!-- Waitlist Form -->
-      <div class="form-card">
-        <h2>Get early access</h2>
-        <p>Reserve your spot for <strong style="color:var(--purple-3)">$2</strong> — one-time, no subscription.</p>
-        <form id="waitlistForm" novalidate>
-          <div class="input-row">
-            <input type="email" id="emailInput" placeholder="your@email.com" required autocomplete="email" />
-            <button type="submit" class="btn-join" id="submitBtn">Reserve &mdash; $2</button>
-          </div>
-        </form>
-        <div class="form-status" id="formStatus"></div>
-        <p class="form-disclaimer">One-time payment. No spam. Unsubscribe anytime.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- Stats -->
-  <div class="wrap">
-    <div class="stats">
-      <div class="stat">
-        <div class="stat-num" id="waitlistCount">—</div>
-        <div class="stat-label">On the waitlist</div>
-      </div>
-      <div class="stat">
-        <div class="stat-num">1</div>
-        <div class="stat-label">Feed to rule them all</div>
-      </div>
-      <div class="stat">
-        <div class="stat-num">0</div>
-        <div class="stat-label">Ads. Ever.</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="divider"></div>
-
-  <!-- Features -->
-  <section class="features">
-    <div class="wrap">
-      <div class="section-label">Why FeedStack</div>
-      <h2 class="section-title">Everything in one place</h2>
-      <p class="section-sub">Stop context-switching between a dozen apps. FeedStack surfaces what actually matters to you.</p>
-
-      <div class="feat-grid">
-        <div class="feat-card">
-          <div class="feat-icon">&#128279;</div>
-          <h3>Paste Any Link</h3>
-          <p>YouTube videos, X posts, or any URL instantly becomes a daily habit card. No searching, no bookmarks, no losing the thing that inspired you.</p>
-        </div>
-        <div class="feat-card">
-          <div class="feat-icon">&#9654;</div>
-          <h3>Watch Without Leaving</h3>
-          <p>YouTube videos play directly inside the app. No distractions, no rabbit holes, just the video you chose and the habit you're building.</p>
-        </div>
-        <div class="feat-card">
-          <div class="feat-icon">&#9201;</div>
-          <h3>Daily Reminders</h3>
-          <p>Choose your time — morning, afternoon, or evening. Your habits show up exactly when you need them, every single day.</p>
-        </div>
-        <div class="feat-card">
-          <div class="feat-icon">&#128293;</div>
-          <h3>Streak Tracking</h3>
-          <p>See your consistency build day by day. Watch your streak grow and feel the momentum of showing up every day.</p>
-        </div>
-        <div class="feat-card">
-          <div class="feat-icon">&#127891;</div>
-          <h3>Graduate Your Habits</h3>
-          <p>When a habit becomes automatic — when you no longer need the reminder — graduate it. Archive it. You built that.</p>
-        </div>
-        <div class="feat-card">
-          <div class="feat-icon">&#128274;</div>
-          <h3>Privacy First</h3>
-          <p>Everything stays on your device. No account needed. No data sold. No tracking.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <div class="divider"></div>
-
-  <!-- Bottom CTA -->
-  <section class="cta-bottom" id="ctaBottom">
-    <div class="wrap">
-      <h2>Ready to take back<br /><span style="background:linear-gradient(135deg,#c084fc,#7c3aed);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">your attention?</span></h2>
-      <p>Join the waitlist today and get priority access when we launch.</p>
-      <button class="btn-join" id="scrollToForm" style="font-size:1rem;padding:16px 36px;">
-        Reserve Your Spot &mdash; $2
-      </button>
-    </div>
-  </section>
-
-  <!-- Footer -->
-  <footer>
-    <p>&copy; 2026 <span>FeedStack</span>. All rights reserved.</p>
-  </footer>
-
-  <script>
-    // ── Config ─────────────────────────────────────────────
-    const RC_API_KEY     = 'test_qsEpHSxhvQlLyewayxIyGlVPNze';
-    const RC_BASE        = 'https://api.revenuecat.com/v1';
-    const STRIPE_LINK    = 'https://buy.stripe.com/dRm3cu5ad0Kg7Yq1tqcQU02';
-
-    let waitlistCount = 0;
-
-    // ── RevenueCat: register paid subscriber ───────────────
-    async function registerSubscriber(email) {
-      const userId = encodeURIComponent(email.toLowerCase().trim());
-      await fetch(`${RC_BASE}/subscribers/${userId}`, {
-        method: 'GET',
-        headers: { 'Authorization': `Bearer ${RC_API_KEY}`, 'Content-Type': 'application/json', 'X-Platform': 'web' },
-      });
-      await fetch(`${RC_BASE}/subscribers/${userId}/attributes`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${RC_API_KEY}`, 'Content-Type': 'application/json', 'X-Platform': 'web' },
-        body: JSON.stringify({
-          attributes: {
-            '$email':            { value: email.toLowerCase().trim() },
-            'waitlist':          { value: 'true' },
-            'waitlist_paid':     { value: 'true' },
-            'waitlist_joined_at':{ value: new Date().toISOString() },
-          },
-        }),
-      });
-    }
-
-    // ── Handle return from Stripe (success=true in URL) ────
-    (async () => {
-      const params = new URLSearchParams(window.location.search);
-      if (params.get('success') === 'true') {
-        const email = localStorage.getItem('feedstack_waitlist_email');
-        const statusEl = document.getElementById('formStatus');
-        statusEl.className = 'form-status success';
-        statusEl.innerHTML = "Payment confirmed — check your email for a <strong>50% off promo code</strong> and the link to download FeedStack when we launch.";
-        document.getElementById('waitlistForm').style.display = 'none';
-        document.getElementById('ctaBottom').style.display = 'none';
-        waitlistCount++;
-        document.getElementById('waitlistCount').textContent = waitlistCount.toLocaleString();
-        if (email) {
-          try { await registerSubscriber(email); } catch (e) { console.error(e); }
-          localStorage.removeItem('feedstack_waitlist_email');
+      @keyframes drift {
+        from {
+          transform: translate(0, 0) scale(1);
         }
-        // Clean the URL
-        window.history.replaceState({}, '', window.location.pathname);
-      }
-    })();
-
-    // ── Form handling ──────────────────────────────────────
-    const form       = document.getElementById('waitlistForm');
-    const emailInput = document.getElementById('emailInput');
-    const submitBtn  = document.getElementById('submitBtn');
-    const status     = document.getElementById('formStatus');
-    const countEl    = document.getElementById('waitlistCount');
-
-    function showStatus(type, msg) {
-      status.className = `form-status ${type}`;
-      status.textContent = msg;
-    }
-
-    form.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const email = emailInput.value.trim();
-
-      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        showStatus('error', 'Please enter a valid email address.');
-        return;
+        to {
+          transform: translate(30px, 40px) scale(1.06);
+        }
       }
 
-      // Save email so we can register with RevenueCat after Stripe redirects back
-      localStorage.setItem('feedstack_waitlist_email', email);
+      /* ── Layout ────────────────────────────────────────── */
+      .wrap {
+        position: relative;
+        z-index: 1;
+        max-width: 960px;
+        margin: 0 auto;
+        padding: 0 24px;
+      }
 
-      // Redirect to Stripe with email pre-filled
-      const stripeUrl = `${STRIPE_LINK}?prefilled_email=${encodeURIComponent(email)}&success_url=${encodeURIComponent(window.location.href + '?success=true')}`;
-      window.location.href = stripeUrl;
-    });
+      /* ── Nav ───────────────────────────────────────────── */
+      nav {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        backdrop-filter: blur(18px);
+        -webkit-backdrop-filter: blur(18px);
+        background: rgba(7, 7, 15, 0.72);
+        border-bottom: 1px solid var(--border);
+      }
+      .nav-inner {
+        max-width: 960px;
+        margin: 0 auto;
+        padding: 18px 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .logo {
+        font-size: 1.35rem;
+        font-weight: 800;
+        letter-spacing: -0.5px;
+        background: linear-gradient(
+          135deg,
+          var(--purple-3) 0%,
+          var(--purple-1) 100%
+        );
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+      .nav-badge {
+        font-size: 0.72rem;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--purple-3);
+        background: rgba(124, 58, 237, 0.15);
+        border: 1px solid rgba(192, 132, 252, 0.25);
+        padding: 5px 12px;
+        border-radius: 999px;
+      }
 
-    // ── Scroll-to-form button ──────────────────────────────
-    document.getElementById('scrollToForm').addEventListener('click', () => {
-      document.getElementById('waitlistForm').scrollIntoView({ behavior: 'smooth', block: 'center' });
-      setTimeout(() => emailInput.focus(), 600);
-    });
-  </script>
-</body>
+      /* ── Hero ──────────────────────────────────────────── */
+      .hero {
+        padding: 110px 0 80px;
+        text-align: center;
+      }
+      .hero-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--purple-3);
+        background: rgba(124, 58, 237, 0.12);
+        border: 1px solid rgba(192, 132, 252, 0.22);
+        padding: 6px 16px;
+        border-radius: 999px;
+        margin-bottom: 32px;
+      }
+      .hero-eyebrow::before {
+        content: "";
+        width: 6px;
+        height: 6px;
+        background: var(--purple-3);
+        border-radius: 50%;
+        animation: pulse 2s ease-in-out infinite;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+          transform: scale(1);
+        }
+        50% {
+          opacity: 0.5;
+          transform: scale(0.7);
+        }
+      }
+
+      .hero h1 {
+        font-size: clamp(2.6rem, 7vw, 4.4rem);
+        font-weight: 900;
+        line-height: 1.08;
+        letter-spacing: -1.5px;
+        margin-bottom: 24px;
+      }
+      .hero h1 span {
+        background: linear-gradient(
+          135deg,
+          #c084fc 0%,
+          #a855f7 40%,
+          #7c3aed 100%
+        );
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+      .hero p {
+        font-size: 1.15rem;
+        color: var(--text-muted);
+        line-height: 1.7;
+        max-width: 540px;
+        margin: 0 auto 48px;
+      }
+
+      /* ── Waitlist Form ─────────────────────────────────── */
+      .form-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: 36px 40px;
+        max-width: 520px;
+        margin: 0 auto;
+        box-shadow: 0 0 60px rgba(124, 58, 237, 0.12);
+      }
+      .form-card h2 {
+        font-size: 1.25rem;
+        font-weight: 700;
+        margin-bottom: 8px;
+      }
+      .form-card p {
+        font-size: 0.88rem;
+        color: var(--text-muted);
+        margin-bottom: 24px;
+      }
+      .input-row {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .input-row input[type="email"] {
+        flex: 1;
+        min-width: 0;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 14px 18px;
+        font-size: 0.95rem;
+        color: var(--text);
+        outline: none;
+        transition:
+          border-color 0.2s,
+          box-shadow 0.2s;
+      }
+      .input-row input[type="email"]::placeholder {
+        color: var(--text-muted);
+      }
+      .input-row input[type="email"]:focus {
+        border-color: var(--purple-2);
+        box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2);
+      }
+      .btn-join {
+        background: linear-gradient(
+          135deg,
+          var(--purple-1) 0%,
+          var(--purple-2) 100%
+        );
+        color: #fff;
+        font-size: 0.95rem;
+        font-weight: 700;
+        border: none;
+        border-radius: var(--radius);
+        padding: 14px 28px;
+        cursor: pointer;
+        transition:
+          opacity 0.2s,
+          transform 0.15s,
+          box-shadow 0.2s;
+        white-space: nowrap;
+        box-shadow: 0 4px 20px rgba(124, 58, 237, 0.4);
+      }
+      .btn-join:hover {
+        opacity: 0.9;
+        transform: translateY(-1px);
+        box-shadow: 0 8px 28px rgba(124, 58, 237, 0.55);
+      }
+      .btn-join:active {
+        transform: translateY(0);
+      }
+      .btn-join:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .form-status {
+        margin-top: 16px;
+        font-size: 0.88rem;
+        border-radius: 10px;
+        padding: 12px 16px;
+        display: none;
+      }
+      .form-status.success {
+        display: block;
+        background: rgba(134, 239, 172, 0.08);
+        border: 1px solid rgba(134, 239, 172, 0.25);
+        color: #86efac;
+      }
+      .form-status.error {
+        display: block;
+        background: rgba(248, 113, 113, 0.08);
+        border: 1px solid rgba(248, 113, 113, 0.25);
+        color: #f87171;
+      }
+
+      .form-disclaimer {
+        margin-top: 14px;
+        font-size: 0.76rem;
+        color: var(--text-muted);
+        text-align: center;
+      }
+
+      /* ── Stats Strip ───────────────────────────────────── */
+      .stats {
+        display: flex;
+        justify-content: center;
+        gap: 48px;
+        padding: 60px 0;
+        flex-wrap: wrap;
+      }
+      .stat {
+        text-align: center;
+      }
+      .stat-num {
+        font-size: 2rem;
+        font-weight: 900;
+        background: linear-gradient(135deg, var(--purple-3), var(--purple-1));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+      .stat-label {
+        font-size: 0.82rem;
+        color: var(--text-muted);
+        margin-top: 4px;
+      }
+
+      /* ── Divider ───────────────────────────────────────── */
+      .divider {
+        height: 1px;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          var(--border),
+          transparent
+        );
+        margin: 0 24px;
+      }
+
+      /* ── Features ──────────────────────────────────────── */
+      .features {
+        padding: 80px 0;
+      }
+      .section-label {
+        text-align: center;
+        font-size: 0.78rem;
+        font-weight: 600;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--purple-3);
+        margin-bottom: 14px;
+      }
+      .section-title {
+        text-align: center;
+        font-size: clamp(1.7rem, 4vw, 2.4rem);
+        font-weight: 800;
+        letter-spacing: -0.8px;
+        margin-bottom: 14px;
+      }
+      .section-sub {
+        text-align: center;
+        font-size: 1rem;
+        color: var(--text-muted);
+        max-width: 480px;
+        margin: 0 auto 52px;
+        line-height: 1.65;
+      }
+      .feat-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 20px;
+      }
+      .feat-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 28px 24px;
+        transition:
+          border-color 0.25s,
+          transform 0.2s,
+          box-shadow 0.25s;
+      }
+      .feat-card:hover {
+        border-color: rgba(139, 92, 246, 0.45);
+        transform: translateY(-3px);
+        box-shadow: 0 12px 40px rgba(124, 58, 237, 0.14);
+      }
+      .feat-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        background: rgba(124, 58, 237, 0.14);
+        border: 1px solid rgba(124, 58, 237, 0.25);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+        margin-bottom: 18px;
+      }
+      .feat-card h3 {
+        font-size: 1rem;
+        font-weight: 700;
+        margin-bottom: 8px;
+      }
+      .feat-card p {
+        font-size: 0.87rem;
+        color: var(--text-muted);
+        line-height: 1.6;
+      }
+
+      /* ── CTA Bottom ────────────────────────────────────── */
+      .cta-bottom {
+        padding: 80px 0 100px;
+        text-align: center;
+      }
+      .cta-bottom h2 {
+        font-size: clamp(1.8rem, 5vw, 2.8rem);
+        font-weight: 900;
+        letter-spacing: -0.8px;
+        margin-bottom: 16px;
+      }
+      .cta-bottom p {
+        font-size: 1rem;
+        color: var(--text-muted);
+        margin-bottom: 36px;
+      }
+
+      /* ── Footer ────────────────────────────────────────── */
+      footer {
+        border-top: 1px solid var(--border);
+        padding: 28px 24px;
+        text-align: center;
+        font-size: 0.8rem;
+        color: var(--text-muted);
+      }
+      footer span {
+        background: linear-gradient(135deg, var(--purple-3), var(--purple-1));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-weight: 700;
+      }
+
+      /* ── Responsive ────────────────────────────────────── */
+      @media (max-width: 540px) {
+        .form-card {
+          padding: 28px 20px;
+        }
+        .input-row {
+          flex-direction: column;
+        }
+        .btn-join {
+          width: 100%;
+        }
+        .stats {
+          gap: 28px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Ambient background -->
+    <div class="bg-orbs" aria-hidden="true">
+      <div class="orb orb-1"></div>
+      <div class="orb orb-2"></div>
+      <div class="orb orb-3"></div>
+    </div>
+
+    <!-- Nav -->
+    <nav>
+      <div class="nav-inner">
+        <div class="logo">FeedStack</div>
+        <div class="nav-badge">Coming Soon</div>
+      </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="hero">
+      <div class="wrap">
+        <div class="hero-eyebrow">Early Access Open</div>
+        <h1>Your content.<br /><span>One smart feed.</span></h1>
+        <p>
+          FeedStack brings everything you read, watch, and follow into a single,
+          intelligent stream — curated for you, not the algorithm.
+        </p>
+
+        <!-- Waitlist Form -->
+        <div class="form-card">
+          <h2>Get early access</h2>
+          <p>
+            Reserve your spot for
+            <strong style="color: var(--purple-3)">$2</strong> — one-time, no
+            subscription.
+          </p>
+          <form id="waitlistForm" novalidate>
+            <div class="input-row">
+              <input
+                type="email"
+                id="emailInput"
+                placeholder="your@email.com"
+                required
+                autocomplete="email"
+              />
+              <button type="submit" class="btn-join" id="submitBtn">
+                Reserve &mdash; $2
+              </button>
+            </div>
+          </form>
+          <div class="form-status" id="formStatus"></div>
+          <p class="form-disclaimer">
+            One-time payment. No spam. Unsubscribe anytime.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Stats -->
+    <div class="wrap">
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-num" id="waitlistCount">—</div>
+          <div class="stat-label">On the waitlist</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num">1</div>
+          <div class="stat-label">Feed to rule them all</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num">0</div>
+          <div class="stat-label">Ads. Ever.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Features -->
+    <section class="features">
+      <div class="wrap">
+        <div class="section-label">Why FeedStack</div>
+        <h2 class="section-title">Everything in one place</h2>
+        <p class="section-sub">
+          Stop context-switching between a dozen apps. FeedStack surfaces what
+          actually matters to you.
+        </p>
+
+        <div class="feat-grid">
+          <div class="feat-card">
+            <div class="feat-icon">&#128279;</div>
+            <h3>Paste Any Link</h3>
+            <p>
+              YouTube videos, X posts, or any URL instantly becomes a daily
+              habit card. No searching, no bookmarks, no losing the thing that
+              inspired you.
+            </p>
+          </div>
+          <div class="feat-card">
+            <div class="feat-icon">&#9654;</div>
+            <h3>Supports Any Link</h3>
+            <p>
+              YouTube tutorials, X posts, Instagram Reels, podcast episodes,
+              blog articles — if it has a URL, Feedstack turns it into a daily
+              habit. Paste it once. Show up every day.
+            </p>
+          </div>
+          <div class="feat-card">
+            <div class="feat-icon">&#9201;</div>
+            <h3>Daily Reminders</h3>
+            <p>
+              Choose your time — morning, afternoon, or evening. Your habits
+              show up exactly when you need them, every single day.
+            </p>
+          </div>
+          <div class="feat-card">
+            <div class="feat-icon">&#128293;</div>
+            <h3>Streak Tracking</h3>
+            <p>
+              See your consistency build day by day. Watch your streak grow and
+              feel the momentum of showing up every day.
+            </p>
+          </div>
+          <div class="feat-card">
+            <div class="feat-icon">&#127891;</div>
+            <h3>Graduate Your Habits</h3>
+            <p>
+              When a habit becomes automatic — when you no longer need the
+              reminder — graduate it. Archive it. You built that.
+            </p>
+          </div>
+          <div class="feat-card">
+            <div class="feat-icon">&#128274;</div>
+            <h3>Privacy First</h3>
+            <p>
+              Everything stays on your device. No account needed. No data sold.
+              No tracking.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- Bottom CTA -->
+    <section class="cta-bottom" id="ctaBottom">
+      <div class="wrap">
+        <h2>
+          Ready to take back<br /><span
+            style="
+              background: linear-gradient(135deg, #c084fc, #7c3aed);
+              -webkit-background-clip: text;
+              -webkit-text-fill-color: transparent;
+              background-clip: text;
+            "
+            >your attention?</span
+          >
+        </h2>
+        <p>Join the waitlist today and get priority access when we launch.</p>
+        <button
+          class="btn-join"
+          id="scrollToForm"
+          style="font-size: 1rem; padding: 16px 36px"
+        >
+          Reserve Your Spot &mdash; $2
+        </button>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+      <p>&copy; 2026 <span>FeedStack</span>. All rights reserved.</p>
+    </footer>
+
+    <script>
+      // ── Config ─────────────────────────────────────────────
+      const RC_API_KEY = "test_qsEpHSxhvQlLyewayxIyGlVPNze";
+      const RC_BASE = "https://api.revenuecat.com/v1";
+      const STRIPE_LINK = "https://buy.stripe.com/dRm3cu5ad0Kg7Yq1tqcQU02";
+
+      let waitlistCount = 0;
+
+      // ── RevenueCat: register paid subscriber ───────────────
+      async function registerSubscriber(email) {
+        const userId = encodeURIComponent(email.toLowerCase().trim());
+        await fetch(`${RC_BASE}/subscribers/${userId}`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${RC_API_KEY}`,
+            "Content-Type": "application/json",
+            "X-Platform": "web",
+          },
+        });
+        await fetch(`${RC_BASE}/subscribers/${userId}/attributes`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${RC_API_KEY}`,
+            "Content-Type": "application/json",
+            "X-Platform": "web",
+          },
+          body: JSON.stringify({
+            attributes: {
+              $email: { value: email.toLowerCase().trim() },
+              waitlist: { value: "true" },
+              waitlist_paid: { value: "true" },
+              waitlist_joined_at: { value: new Date().toISOString() },
+            },
+          }),
+        });
+      }
+
+      // ── Handle return from Stripe (success=true in URL) ────
+      (async () => {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get("success") === "true") {
+          const email = localStorage.getItem("feedstack_waitlist_email");
+          const statusEl = document.getElementById("formStatus");
+          statusEl.className = "form-status success";
+          statusEl.innerHTML =
+            "Payment confirmed — check your email for a <strong>50% off promo code</strong> and the link to download FeedStack when we launch.";
+          document.getElementById("waitlistForm").style.display = "none";
+          document.getElementById("ctaBottom").style.display = "none";
+          waitlistCount++;
+          document.getElementById("waitlistCount").textContent =
+            waitlistCount.toLocaleString();
+          if (email) {
+            try {
+              await registerSubscriber(email);
+            } catch (e) {
+              console.error(e);
+            }
+            localStorage.removeItem("feedstack_waitlist_email");
+          }
+          // Clean the URL
+          window.history.replaceState({}, "", window.location.pathname);
+        }
+      })();
+
+      // ── Form handling ──────────────────────────────────────
+      const form = document.getElementById("waitlistForm");
+      const emailInput = document.getElementById("emailInput");
+      const submitBtn = document.getElementById("submitBtn");
+      const status = document.getElementById("formStatus");
+      const countEl = document.getElementById("waitlistCount");
+
+      function showStatus(type, msg) {
+        status.className = `form-status ${type}`;
+        status.textContent = msg;
+      }
+
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const email = emailInput.value.trim();
+
+        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          showStatus("error", "Please enter a valid email address.");
+          return;
+        }
+
+        // Save email so we can register with RevenueCat after Stripe redirects back
+        localStorage.setItem("feedstack_waitlist_email", email);
+
+        // Redirect to Stripe with email pre-filled
+        const stripeUrl = `${STRIPE_LINK}?prefilled_email=${encodeURIComponent(email)}&success_url=${encodeURIComponent(window.location.href + "?success=true")}`;
+        window.location.href = stripeUrl;
+      });
+
+      // ── Scroll-to-form button ──────────────────────────────
+      document.getElementById("scrollToForm").addEventListener("click", () => {
+        document
+          .getElementById("waitlistForm")
+          .scrollIntoView({ behavior: "smooth", block: "center" });
+        setTimeout(() => emailInput.focus(), 600);
+      });
+    </script>
+  </body>
 </html>
